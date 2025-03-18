@@ -103,13 +103,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     $(document).ready(function () {
-      // Initialize Supabase client
       const supabase = window.supabase.createClient(
         'https://tytqhynyngacgwotruxi.supabase.co',
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5dHFoeW55bmdhY2d3b3RydXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5Mjc5NDQsImV4cCI6MjA1NzUwMzk0NH0.iATNtASF6llrz-t7D2lWEthwcaVLesldnIqMSkEpAmo'
       );
-  
-      // Password visibility toggle
+
+      // Toggle password visibility
       $("#show_hide_password a").on('click', function (event) {
         event.preventDefault();
         if ($('#show_hide_password input').attr("type") == "text") {
@@ -122,47 +121,48 @@
           $('#show_hide_password i').addClass("bi-eye-fill");
         }
       });
-  
+
       // Builder login form submission
       $('#builderLoginForm').on('submit', async function (event) {
         event.preventDefault();
-  
+
         const email = $('#inputEmailAddress').val().trim();
         const password = $('#inputChoosePassword').val().trim();
-  
+
         if (!email || !password) {
           alert('Please fill in all fields.');
           return;
         }
-  
+
         try {
           const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password
           });
-  
+
           if (error) {
             console.error('Login Error:', error);
             alert('Login failed: ' + error.message);
             return;
           }
-  
+
           // Check if the user is a builder
           const { data: builder, error: builderError } = await supabase
             .from('builders')
             .select('id')
             .eq('email', email)
             .single();
-  
+
           if (builderError || !builder) {
-            alert('This email is not registered as a builder. Please use the superuser login.');
+            alert('This email is not registered as a builder. Please use the admin login or register.');
             await supabase.auth.signOut();
             return;
           }
-  
+
           // Store login state and redirect to builder dashboard
           localStorage.setItem('loggedIn', true);
           localStorage.setItem('userEmail', email);
+          localStorage.setItem('userRole', 'builder'); // Mark as builder
           window.location.href = 'builderdashboard.html';
         } catch (error) {
           console.error('Unexpected Error:', error);
